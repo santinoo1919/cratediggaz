@@ -41,14 +41,12 @@ export default function RecordComp({
         onPressIn={() => setIsHovered(true)}
         onPressOut={() => setIsHovered(false)}
         className={`flex-row items-center justify-center ${
-          isSelected
-            ? "rounded-sm outline-4 ring-4 ring-blue-500 ring-offset-4"
-            : ""
+          isSelected ? "rounded-sm ring-4 ring-gray-100 ring-offset-4" : ""
         }`}
       >
         <Image
           source={{ uri: album.images[0]?.url }}
-          className="w-[100px] h-[100px] md:w-[300px] md:h-[300px] rounded"
+          className="w-[100px] h-[100px] md:w-[300px] md:h-[300px] rounded shadow-md"
         />
       </Pressable>
     </View>
