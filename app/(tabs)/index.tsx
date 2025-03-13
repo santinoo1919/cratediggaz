@@ -1,74 +1,106 @@
-import { Image, StyleSheet, Platform } from 'react-native';
-
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { View, Text, Pressable, Linking } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import RecordComp from "@/components/RecordComp";
+import { useEffect, useState, useRef, useCallback } from "react";
+import { searchAlbums } from "@/services/spotify";
+import { FlashList } from "@shopify/flash-list";
+import { Album } from "@/components/RecordComp";
+import { Image } from "react-native";
+import { useAlbumSelection } from "@/hooks/useAlbumSelection";
 
 export default function HomeScreen() {
+  const [albums, setAlbums] = useState<Album[]>([]);
+  const listRef = useRef<FlashList<Album>>(null);
+  const { selectedId, selectedArtist, handleSelect } = useAlbumSelection();
+
+  // Add this function to handle scrolling
+  const handleSelectAndScroll = (album: Album, index: number) => {
+    handleSelect(album, index);
+    listRef.current?.scrollToIndex({
+      index,
+      animated: true,
+      viewPosition: 0.5, // This centers the selected item
+    });
+  };
+
+  useEffect(() => {
+    async function fetchAlbums() {
+      try {
+        console.log("Fetching albums...");
+        const results = await searchAlbums("jazz");
+        setAlbums(results as Album[]);
+        if (results[0]) {
+          handleSelectAndScroll(results[0] as Album, 0);
+        }
+      } catch (error) {
+        console.error("Error fetching albums:", error);
+      }
+    }
+
+    fetchAlbums();
+  }, []);
+
+  console.log("Current albums length:", albums.length);
+
+  const renderItem = useCallback(
+    ({ item, index }: { item: Album; index: number }) => (
+      <RecordComp
+        album={item}
+        isSelected={item.id === selectedId}
+        onPress={() => handleSelectAndScroll(item, index)}
+        index={index}
+        totalLength={albums.length}
+      />
+    ),
+    [selectedId, handleSelectAndScroll, albums.length]
+  );
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <SafeAreaView className="flex-1">
+      <View className="flex-1 flex-row">
+        <View className="w-[40%] h-full">
+          <View className="flex-1">
+            <FlashList
+              ref={listRef}
+              className="flex-1"
+              data={albums}
+              renderItem={renderItem}
+              estimatedItemSize={214}
+              showsVerticalScrollIndicator={false}
+              extraData={selectedId}
+              contentContainerStyle={{
+                paddingTop: 20,
+                paddingHorizontal: 16,
+              }}
+            />
+          </View>
+        </View>
+        <View className="w-[60%] place-content-center items-center gap-48">
+          <Text className="text-5xl font-bold">Cratediggaz</Text>
+          <View className="flex-col items-center gap-2">
+            <Image
+              source={{ uri: selectedArtist?.images[0]?.url }}
+              className="w-24 h-24 rounded-full"
+            />
+            <Text className="text-xl font-semibold">
+              {albums.find((a) => a.id === selectedId)?.name}
+            </Text>
+            <Text>{selectedArtist?.name}</Text>
+
+            <Text>{selectedArtist?.followers?.total}</Text>
+            <Text>{selectedArtist?.genres.join(", ")}</Text>
+
+            <Pressable
+              className="bg-blue-500 p-2 rounded-lg"
+              onPress={() =>
+                Linking.openURL(selectedArtist?.external_urls.spotify)
+              }
+            >
+              <Text className="text-white">Check it out </Text>
+            </Pressable>
+          </View>
+        </View>
+      </View>
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
