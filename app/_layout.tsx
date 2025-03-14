@@ -14,6 +14,7 @@ import "./../global.css";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { RecordsProvider } from "@/components/RecordsContext";
 import { View } from "react-native";
+import { Toaster } from "sonner";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -42,6 +43,7 @@ export default function RootLayout() {
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="+not-found" />
           </Stack>
+          <Toaster richColors position="top-center" />
 
           <StatusBar style="auto" />
         </View>

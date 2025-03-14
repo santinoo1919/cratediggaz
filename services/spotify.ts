@@ -1,12 +1,16 @@
 import axios from "axios";
 import { encode as base64Encode } from "base-64";
+import { showNotification } from "@/hooks/notifications";
 
 const SPOTIFY_CLIENT_ID = process.env.EXPO_PUBLIC_SPOTIFY_CLIENT_ID;
 const SPOTIFY_CLIENT_SECRET = process.env.EXPO_PUBLIC_SPOTIFY_CLIENT_SECRET;
 const SPOTIFY_API = "https://api.spotify.com/v1";
 const TOKEN_API = "https://accounts.spotify.com/api/token";
+const MAX_RETRIES = 3;
 
-// Get client credentials token (simpler than user auth for just searching)
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// Get client credentials token
 export const getSpotifyToken = async () => {
   try {
     const auth = base64Encode(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`);
@@ -27,89 +31,140 @@ export const getSpotifyToken = async () => {
   }
 };
 
-// Search for top 50 funk albums
+// Search for albums with retry logic
 export async function searchAlbums(query: string = "genre:funk") {
-  try {
-    const token = await getSpotifyToken();
-    if (!token) return [];
+  let retries = 0;
 
-    const response = await fetch(
-      `${SPOTIFY_API}/search?q=${encodeURIComponent(
-        query
-      )}&type=album&market=US&limit=50`,
-      {
+  while (retries < MAX_RETRIES) {
+    try {
+      const token = await getSpotifyToken();
+      if (!token) return [];
+
+      const response = await fetch(
+        `${SPOTIFY_API}/search?q=${encodeURIComponent(
+          query
+        )}&type=album&market=US&limit=50`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.status === 429) {
+        const retryAfter = response.headers.get("Retry-After") || "1";
+        showNotification.rateLimitHit(retryAfter, retries, MAX_RETRIES);
+        await delay(parseInt(retryAfter) * 1000);
+        retries++;
+        continue;
+      }
+
+      if (!response.ok) {
+        showNotification.error("Failed to fetch albums");
+        throw new Error("Failed to fetch albums");
+      }
+
+      const data = await response.json();
+      return data.albums.items.map((album: any) => ({
+        id: album.id,
+        images: album.images,
+        name: album.name,
+        popularity: album.popularity,
+        artists: album.artists.map((artist: any) => ({
+          id: artist.id,
+          name: artist.name,
+        })),
+      }));
+    } catch (error) {
+      retries++;
+      if (retries === MAX_RETRIES) {
+        showNotification.error(
+          "Could not fetch albums after multiple attempts"
+        );
+        return [];
+      }
+      await delay(1000 * retries);
+    }
+  }
+  return [];
+}
+
+// Get artist with retry logic
+export async function getArtist(token: string, artistId: string) {
+  let retries = 0;
+
+  while (retries < MAX_RETRIES) {
+    try {
+      const response = await fetch(`${SPOTIFY_API}/artists/${artistId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+      });
+
+      if (response.status === 429) {
+        const retryAfter = response.headers.get("Retry-After") || "1";
+        showNotification.rateLimitHit(retryAfter, retries, MAX_RETRIES);
+        await delay(parseInt(retryAfter) * 1000);
+        retries++;
+        continue;
       }
-    );
 
-    if (!response.ok) throw new Error("Failed to fetch albums");
+      if (!response.ok) {
+        showNotification.error("Failed to fetch artist");
+        throw new Error("Failed to fetch artist");
+      }
 
-    const data = await response.json();
-
-    return data.albums.items.map((album: any) => ({
-      id: album.id,
-      images: album.images,
-      name: album.name,
-      artists: album.artists.map((artist: any) => ({
-        id: artist.id,
-        name: artist.name,
-      })),
-    }));
-  } catch (error) {
-    console.error("Error searching albums:", error);
-    return [];
-  }
-}
-
-// Get album details
-export const getAlbumDetails = async (token: string, albumId: string) => {
-  try {
-    const response = await axios.get(`${SPOTIFY_API}/albums/${albumId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Error getting album details:", error);
-    return null;
-  }
-};
-
-export async function getArtist(token: string, artistId: string) {
-  const response = await fetch(
-    `https://api.spotify.com/v1/artists/${artistId}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      return response.json();
+    } catch (error) {
+      retries++;
+      if (retries === MAX_RETRIES) {
+        showNotification.error(
+          "Could not fetch artist after multiple attempts"
+        );
+        throw error;
+      }
+      await delay(1000 * retries);
     }
-  );
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch artist");
   }
-
-  return response.json();
 }
 
+// Get album tracks with retry logic
 export async function getAlbumTracks(token: string, albumId: string) {
-  const response = await fetch(
-    `https://api.spotify.com/v1/albums/${albumId}/tracks`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+  let retries = 0;
+
+  while (retries < MAX_RETRIES) {
+    try {
+      const response = await fetch(`${SPOTIFY_API}/albums/${albumId}/tracks`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.status === 429) {
+        const retryAfter = response.headers.get("Retry-After") || "1";
+        showNotification.rateLimitHit(retryAfter, retries, MAX_RETRIES);
+        await delay(parseInt(retryAfter) * 1000);
+        retries++;
+        continue;
+      }
+
+      if (!response.ok) {
+        showNotification.error("Failed to fetch tracks");
+        throw new Error("Failed to fetch tracks");
+      }
+
+      return response.json();
+    } catch (error) {
+      retries++;
+      if (retries === MAX_RETRIES) {
+        showNotification.error(
+          "Could not fetch tracks after multiple attempts"
+        );
+        throw error;
+      }
+      await delay(1000 * retries);
     }
-  );
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch album tracks");
   }
-
-  return response.json();
 }
 
 export async function getRandomPreviewTrack(albumId: string) {
@@ -117,6 +172,8 @@ export async function getRandomPreviewTrack(albumId: string) {
   if (!token) return null;
 
   const tracks = await getAlbumTracks(token, albumId);
+  if (!tracks?.items) return null;
+
   const tracksWithPreviews = tracks.items.filter(
     (track: { preview_url: string | null }) => track.preview_url
   );

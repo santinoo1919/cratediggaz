@@ -7,6 +7,7 @@ export interface Album {
   images: { url: string }[];
   name: string;
   artists: { id: string; name: string }[]; // Added id to artists
+  popularity: number;
 }
 
 interface RecordProps {
@@ -37,11 +38,11 @@ export default function RecordComp({
   return (
     <MotiView
       animate={{
-        scale: isSelected ? 1.9 : 1,
+        scale: isSelected ? 2.5 : 1,
       }}
       transition={{
         type: "spring",
-        damping: 15, // Controls how quickly the spring stops
+        damping: 30, // Controls how quickly the spring stops
         stiffness: 500, // Controls how rigid/bouncy the spring is
       }}
       className="w-full items-center p-2.5 mb-8 rounded-xl"
@@ -61,12 +62,17 @@ export default function RecordComp({
           onPressIn={() => setIsHovered(true)}
           onPressOut={() => setIsHovered(false)}
           className={`flex-row items-center justify-center ${
-            isSelected ? "rounded-sm ring-4 ring-gray-50 my-16" : ""
+            isSelected ? "my-24" : ""
           }`}
         >
           <Image
             source={{ uri: album.images[0]?.url }}
-            className="w-[100px] h-[100px] md:w-[100px] md:h-[100px] rounded shadow-md"
+            className={`w-[80px] h-[80px] md:w-[100px] md:h-[100px] rounded shadow-md ${
+              isSelected ? " ring ring-gray-50" : ""
+            }`}
+            onError={(e) =>
+              console.log("Error loading artist image:", e.nativeEvent.error)
+            } // Log errors
           />
         </Pressable>
       </MotiView>

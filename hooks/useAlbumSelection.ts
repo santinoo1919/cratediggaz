@@ -1,39 +1,46 @@
-import { useState, useEffect } from "react";
-import { getSpotifyToken, getArtist, getAlbumTracks } from "@/services/spotify";
+import { useState } from "react";
+import { getSpotifyToken, getArtist } from "@/services/spotify";
 import type { Album } from "@/components/RecordComp";
 
 export function useAlbumSelection() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedArtist, setSelectedArtist] = useState<any>(null);
+  const delay = (ms: number) =>
+    new Promise((resolve) => setTimeout(resolve, ms));
 
   const handleSelect = async (album: Album, index: number) => {
     setSelectedId(album.id);
+    setSelectedArtist({
+      name: album.artists[0]?.name,
+      id: album.artists[0]?.id,
+      external_urls: {
+        spotify: `https://open.spotify.com/artist/${album.artists[0]?.id}`,
+      },
+    });
 
-    try {
-      const token = await getSpotifyToken();
-      if (!token) return;
+    // Add delay before fetching artist details
+    await delay(1000);
 
-      // Get artist info
-      const artistId = album.artists[0]?.id;
-      if (artistId) {
+    // Fetch full artist details including image
+    const token = await getSpotifyToken();
+    if (!token) return;
+
+    const artistId = album.artists[0]?.id;
+    if (artistId) {
+      try {
         const artistData = await getArtist(token, artistId);
-        setSelectedArtist(artistData);
+        if (artistData) {
+          setSelectedArtist((prev: any) => ({
+            ...prev,
+            ...artistData,
+            images: artistData.images, // Ensure images are included
+          }));
+        }
+      } catch (error) {
+        console.error("Error fetching artist:", error);
       }
-
-      // Get tracks and try to play first available preview
-      const tracksData = await getAlbumTracks(token, album.id);
-      const trackWithPreview = tracksData.items.find(
-        (track: { preview_url: string | null }) => track.preview_url
-      );
-
-      if (trackWithPreview?.preview_url) {
-        // Sound-related code removed
-      }
-    } catch (error) {
-      console.error("Error in handleSelect:", error);
     }
   };
-
   return {
     selectedId,
     selectedArtist,

@@ -9,8 +9,12 @@ import { Image } from "react-native";
 import { useAlbumSelection } from "@/hooks/useAlbumSelection";
 import { LinearGradient } from "expo-linear-gradient";
 import ImageColors from "react-native-image-colors";
+import { MotiView } from "moti";
+import { usePathname } from "expo-router";
+import AlbumDetails from "@/components/AlbumDetails";
 
 export default function HomeScreen() {
+  const pathname = usePathname();
   const [albums, setAlbums] = useState<Album[]>([]);
   const listRef = useRef<FlashList<Album>>(null);
   const { selectedId, selectedArtist, handleSelect } = useAlbumSelection();
@@ -63,11 +67,15 @@ export default function HomeScreen() {
   useEffect(() => {
     async function fetchAlbums() {
       try {
-        console.log("Fetching funk albums from 1972-1982...");
+        console.log("Fetching popular funk albums from 1972-1982...");
         const results = await searchAlbums("funk year:1972-1982");
-        setAlbums(results as Album[]);
-        if (results[0]) {
-          handleSelectAndScroll(results[0] as Album, 0);
+        // Sort by popularity (highest first)
+        const sortedResults = results.sort(
+          (a: Album, b: Album) => b.popularity - a.popularity
+        );
+        setAlbums(sortedResults);
+        if (sortedResults[0]) {
+          handleSelectAndScroll(sortedResults[0] as Album, 0);
         }
       } catch (error) {
         console.error("Error fetching albums:", error);
@@ -100,64 +108,44 @@ export default function HomeScreen() {
         <View className="flex-1 flex-row">
           <View className="w-[40%] h-full">
             <View className="flex-1">
-              <FlashList
-                ref={listRef}
-                className="flex-1"
-                data={albums}
-                renderItem={renderItem}
-                estimatedItemSize={214}
-                showsVerticalScrollIndicator={false}
-                extraData={selectedId}
-                contentContainerStyle={{
-                  paddingTop: 20,
-                  paddingHorizontal: 16,
+              <MotiView
+                key={pathname}
+                from={{
+                  opacity: 0,
+                  translateX: -20,
                 }}
-              />
-            </View>
-          </View>
-          <View className="w-[60%] my-24 items-center gap-16">
-            <View className="flex-col items-center gap-4">
-              <Text className="text-2xl font-semibold text-gray-900">
-                Cratediggaz
-              </Text>
-              <Text className="text-md font-normal text-gray-800 w-[80%] text-center">
-                A curated selection of records i own or think they are the
-                quintessential records of all time for soul and funk between
-                1972 and 1982.
-              </Text>
-            </View>
-
-            <View className="flex-col items-center gap-2">
-              <Image
-                source={{ uri: selectedArtist?.images[0]?.url }}
-                className="w-32 h-32 rounded-full border-4 border-gray-100 shadow-md"
-              />
-              <View className="flex-col items-center ">
-                <Text className="text-xl font-semibold">
-                  {albums.find((a) => a.id === selectedId)?.name}
-                </Text>
-                <Text className="text-lg font-medium text-gray-800">
-                  {selectedArtist?.name}
-                </Text>
-              </View>
-              <View className="flex-col items-center mb-4">
-                <Text className="text-md font-normal text-gray-800">
-                  {selectedArtist?.followers?.total}
-                </Text>
-                <Text className="text-md font-normal text-gray-800">
-                  {selectedArtist?.genres.join(", ")}
-                </Text>
-              </View>
-              <Pressable
-                className="bg-gray-900 py-2 px-4 rounded-lg border-2 border-gray-800 shadow-md"
-                onPress={() =>
-                  Linking.openURL(selectedArtist?.external_urls.spotify)
-                }
+                animate={{
+                  opacity: 1,
+                  translateX: 0,
+                }}
+                transition={{
+                  type: "timing",
+                  duration: 1000,
+                }}
+                className="flex-1"
               >
-                <Text className="text-white">Check it out </Text>
-              </Pressable>
+                <FlashList
+                  ref={listRef}
+                  className="flex-1"
+                  data={albums}
+                  renderItem={renderItem}
+                  estimatedItemSize={214}
+                  showsVerticalScrollIndicator={false}
+                  extraData={selectedId}
+                  contentContainerStyle={{
+                    paddingTop: 20,
+                    paddingHorizontal: 16,
+                  }}
+                />
+              </MotiView>
             </View>
           </View>
+          <AlbumDetails
+            genre="funk" // or "soul" for explore.tsx
+            albums={albums}
+            selectedId={selectedId || ""}
+            selectedArtist={selectedArtist}
+          />
         </View>
       </SafeAreaView>
     </LinearGradient>
