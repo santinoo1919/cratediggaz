@@ -1,4 +1,4 @@
-import { View, Text, Pressable, Linking } from "react-native";
+import { View, Text, Pressable, Linking, Animated } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import RecordComp from "@/components/RecordComp";
 import { useEffect, useState, useRef, useCallback } from "react";
@@ -63,8 +63,8 @@ export default function HomeScreen() {
   useEffect(() => {
     async function fetchAlbums() {
       try {
-        console.log("Fetching albums...");
-        const results = await searchAlbums("jazz");
+        console.log("Fetching funk albums from 1972-1982...");
+        const results = await searchAlbums("funk year:1972-1982");
         setAlbums(results as Album[]);
         if (results[0]) {
           handleSelectAndScroll(results[0] as Album, 0);
@@ -76,7 +76,6 @@ export default function HomeScreen() {
 
     fetchAlbums();
   }, []);
-
   console.log("Current albums length:", albums.length);
 
   const renderItem = useCallback(
@@ -116,9 +115,9 @@ export default function HomeScreen() {
               />
             </View>
           </View>
-          <View className="w-[60%] place-content-center items-center gap-16">
+          <View className="w-[60%] my-24 items-center gap-16">
             <View className="flex-col items-center gap-4">
-              <Text className="text-5xl font-bold text-gray-900">
+              <Text className="text-2xl font-semibold text-gray-900">
                 Cratediggaz
               </Text>
               <Text className="text-md font-normal text-gray-800 w-[80%] text-center">
@@ -133,16 +132,24 @@ export default function HomeScreen() {
                 source={{ uri: selectedArtist?.images[0]?.url }}
                 className="w-32 h-32 rounded-full border-4 border-gray-100 shadow-md"
               />
-              <Text className="text-xl font-semibold">
-                {albums.find((a) => a.id === selectedId)?.name}
-              </Text>
-              <Text>{selectedArtist?.name}</Text>
-
-              <Text>{selectedArtist?.followers?.total}</Text>
-              <Text>{selectedArtist?.genres.join(", ")}</Text>
-
+              <View className="flex-col items-center ">
+                <Text className="text-xl font-semibold">
+                  {albums.find((a) => a.id === selectedId)?.name}
+                </Text>
+                <Text className="text-lg font-medium text-gray-800">
+                  {selectedArtist?.name}
+                </Text>
+              </View>
+              <View className="flex-col items-center mb-4">
+                <Text className="text-md font-normal text-gray-800">
+                  {selectedArtist?.followers?.total}
+                </Text>
+                <Text className="text-md font-normal text-gray-800">
+                  {selectedArtist?.genres.join(", ")}
+                </Text>
+              </View>
               <Pressable
-                className="bg-blue-500 p-2 rounded-lg"
+                className="bg-gray-900 py-2 px-4 rounded-lg border-2 border-gray-800 shadow-md"
                 onPress={() =>
                   Linking.openURL(selectedArtist?.external_urls.spotify)
                 }

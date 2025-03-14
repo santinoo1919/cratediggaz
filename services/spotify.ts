@@ -27,8 +27,8 @@ export const getSpotifyToken = async () => {
   }
 };
 
-// Search for albums
-export async function searchAlbums(query: string = "jazz") {
+// Search for top 50 funk albums
+export async function searchAlbums(query: string = "genre:funk") {
   try {
     const token = await getSpotifyToken();
     if (!token) return [];
@@ -47,7 +47,16 @@ export async function searchAlbums(query: string = "jazz") {
     if (!response.ok) throw new Error("Failed to fetch albums");
 
     const data = await response.json();
-    return data.albums.items;
+
+    return data.albums.items.map((album: any) => ({
+      id: album.id,
+      images: album.images,
+      name: album.name,
+      artists: album.artists.map((artist: any) => ({
+        id: artist.id,
+        name: artist.name,
+      })),
+    }));
   } catch (error) {
     console.error("Error searching albums:", error);
     return [];
