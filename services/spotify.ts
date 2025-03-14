@@ -69,6 +69,7 @@ export async function searchAlbums(query: string = "genre:funk") {
         id: album.id,
         images: album.images,
         name: album.name,
+        release_date: album.release_date, // Make sure this is included
         popularity: album.popularity,
         artists: album.artists.map((artist: any) => ({
           id: artist.id,

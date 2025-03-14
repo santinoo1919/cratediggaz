@@ -2,13 +2,21 @@ import { useState } from "react";
 import { getSpotifyToken, getArtist } from "@/services/spotify";
 import type { Album } from "@/components/RecordComp";
 
+interface Artist {
+  name: string;
+  id: string;
+  images?: { url: string }[];
+  external_urls: { spotify: string };
+  followers?: { total: number };
+  genres?: string[];
+}
+
 export function useAlbumSelection() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedArtist, setSelectedArtist] = useState<any>(null);
-  const delay = (ms: number) =>
-    new Promise((resolve) => setTimeout(resolve, ms));
 
   const handleSelect = async (album: Album, index: number) => {
+    // First, update the UI immediately
     setSelectedId(album.id);
     setSelectedArtist({
       name: album.artists[0]?.name,
@@ -18,29 +26,26 @@ export function useAlbumSelection() {
       },
     });
 
-    // Add delay before fetching artist details
-    await delay(1000);
+    // Then fetch additional data
+    try {
+      const token = await getSpotifyToken();
+      if (!token) return;
 
-    // Fetch full artist details including image
-    const token = await getSpotifyToken();
-    if (!token) return;
-
-    const artistId = album.artists[0]?.id;
-    if (artistId) {
-      try {
+      const artistId = album.artists[0]?.id;
+      if (artistId) {
         const artistData = await getArtist(token, artistId);
         if (artistData) {
-          setSelectedArtist((prev: any) => ({
+          setSelectedArtist((prev: Artist) => ({
             ...prev,
             ...artistData,
-            images: artistData.images, // Ensure images are included
           }));
         }
-      } catch (error) {
-        console.error("Error fetching artist:", error);
       }
+    } catch (error) {
+      console.error("Error in handleSelect:", error);
     }
   };
+
   return {
     selectedId,
     selectedArtist,

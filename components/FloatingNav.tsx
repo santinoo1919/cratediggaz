@@ -9,7 +9,7 @@ export default function FloatingNav() {
   console.log("Current pathname:", pathname); // Debug log
 
   return (
-    <View className="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-black/10 rounded-full px-6 py-4 flex-row gap-8 border border-white/10">
+    <View className="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-gradient-to-b from-slate-950/20 to-slate-900/20 rounded-lg px-8 py-2 flex-row gap-8 border border-slate-50/10 shadow-md shadow-slate-900/40 items-center justify-center">
       <Link href="/" asChild>
         <Pressable>
           <Text
@@ -23,6 +23,8 @@ export default function FloatingNav() {
           </Text>
         </Pressable>
       </Link>
+      <View className="flex-row text-slate-50/10">|</View>
+
       <Link href="/(tabs)/explore" asChild>
         <Pressable>
           <Text

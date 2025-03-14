@@ -8,6 +8,7 @@ export interface Album {
   name: string;
   artists: { id: string; name: string }[]; // Added id to artists
   popularity: number;
+  release_date: string;
 }
 
 interface RecordProps {
@@ -62,7 +63,7 @@ export default function RecordComp({
           onPressIn={() => setIsHovered(true)}
           onPressOut={() => setIsHovered(false)}
           className={`flex-row items-center justify-center ${
-            isSelected ? "my-24" : ""
+            isSelected ? "z-30 my-24" : ""
           }`}
         >
           <Image
