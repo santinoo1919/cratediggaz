@@ -20,8 +20,8 @@ export default function ExploreScreen() {
   const { selectedId, selectedArtist, handleSelect } = useAlbumSelection();
   const listRef = useRef<FlashList<Album>>(null);
   const [gradientColors, setGradientColors] = useState<string[]>([
-    "#4facfe",
-    "#00f2fe",
+    "#0f172a", // slate-900
+    "#1e293b", // slate-800
   ]);
 
   useEffect(() => {
