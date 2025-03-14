@@ -1,6 +1,7 @@
 import { View, Text, Pressable, Image, Linking, Platform } from "react-native";
 import { Album } from "./RecordComp";
 import { MotiView } from "moti";
+import { useWikipediaInfo } from "../hooks/useWikipediaInfo";
 
 interface AlbumDetailsProps {
   genre: "funk" | "soul";
@@ -15,11 +16,13 @@ export default function AlbumDetails({
   selectedId,
   selectedArtist,
 }: AlbumDetailsProps) {
+  const { description, url } = useWikipediaInfo(selectedArtist?.name);
+
   console.log("AlbumDetails props:", { genre, selectedId, selectedArtist }); // Debug log
 
   return (
     <View className="w-[60%] my-24 items-center gap-16">
-      <View className="w-full sm:w-[60%] flex-col items-center gap-2">
+      <View className="w-full max-w-[400px] flex-col items-center gap-2">
         <Text className="text-xl font-semibold text-gray-900">Cratediggaz</Text>
         <Text className="text-md font-normal text-gray-800 w-[80%] text-center">
           A curated selection of quintessential records of all time for {genre}{" "}
@@ -27,7 +30,7 @@ export default function AlbumDetails({
         </Text>
       </View>
 
-      <View className="flex-col items-center gap-2">
+      <View className="w-full max-w-[500px] flex-col items-center gap-2">
         <MotiView
           key={selectedId} // Add this to trigger animation on selection change
           from={{
@@ -45,14 +48,6 @@ export default function AlbumDetails({
           }}
           className="flex-col items-center gap-2"
         >
-          <Image
-            source={{
-              uri:
-                selectedArtist?.images?.[0]?.url ||
-                "https://via.placeholder.com/150",
-            }}
-            className="w-32 h-32 rounded-full border-4 border-gray-100 shadow-md"
-          />
           <View className="w-full sm:w-[80%] flex-col items-center align-middle ">
             <Text className="text-4xl font-semibold text-center">
               {albums.find((a) => a.id === selectedId)?.name}
@@ -60,6 +55,14 @@ export default function AlbumDetails({
             <Text className="text-lg font-medium text-gray-800">
               {selectedArtist?.name}
             </Text>
+            <Image
+              source={{
+                uri:
+                  selectedArtist?.images?.[0]?.url ||
+                  "https://via.placeholder.com/150",
+              }}
+              className="w-24 h-24 rounded-full border-4 border-gray-100 shadow-md"
+            />
             <Text className="text-md font-normal text-gray-800">
               {selectedArtist?.release_date}
             </Text>
@@ -72,6 +75,12 @@ export default function AlbumDetails({
               {selectedArtist?.genres?.join(", ")}
             </Text>
           </View>
+
+          {description && (
+            <Text className="text-lg font-normal text-slate-800 text-center px-8 mb-4 ">
+              {description}
+            </Text>
+          )}
           <Pressable
             className="bg-gray-900 py-2 px-4 rounded-lg border-2 border-gray-800 shadow-md"
             onPress={() => {
