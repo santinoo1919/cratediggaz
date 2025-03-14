@@ -4,7 +4,13 @@ module.exports = {
   content: ["./app/**/*.{js,jsx,ts,tsx}", "./components/**/*.{js,jsx,ts,tsx}"],
   presets: [require("nativewind/preset")],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        // Remove the array syntax
+        sans: "SpaceGrotesk_400Regular",
+        bold: "SpaceGrotesk_700Bold",
+      },
+    },
   },
   plugins: [],
 };
