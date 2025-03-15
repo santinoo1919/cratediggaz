@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { View, Image, Text, TouchableOpacity, Pressable } from "react-native";
+import {
+  View,
+  Image,
+  Text,
+  TouchableOpacity,
+  Pressable,
+  useWindowDimensions,
+} from "react-native";
 import { MotiView } from "moti";
 
 export interface Album {
@@ -31,15 +38,27 @@ export default function RecordComp({
   totalLength: number;
 }) {
   const [isHovered, setIsHovered] = useState(false);
+  const { width } = useWindowDimensions(); // Add this import from react-native
 
-  const scale = isSelected ? 1.8 : 1; // Slightly larger when selected
-  const translateX = isSelected ? 10 : 0; // Move to the right when selected
+  // Adjust scale based on screen size
+  const getScale = () => {
+    if (width < 640) {
+      // mobile
+      return isSelected ? 1.5 : 0.9;
+    } else if (width < 1024) {
+      // tablet
+      return isSelected ? 2 : 1;
+    } else {
+      // desktop
+      return isSelected ? 2.5 : 1;
+    }
+  };
   const randomRotation = Math.random() * 20 - 10;
 
   return (
     <MotiView
       animate={{
-        scale: isSelected ? 2.5 : 1,
+        scale: getScale(),
       }}
       transition={{
         type: "spring",
@@ -63,7 +82,7 @@ export default function RecordComp({
           onPressIn={() => setIsHovered(true)}
           onPressOut={() => setIsHovered(false)}
           className={`flex-row items-center justify-center ${
-            isSelected ? "z-30 my-24" : ""
+            isSelected ? "z-30 my-12 md:my-24" : ""
           }`}
         >
           <Image

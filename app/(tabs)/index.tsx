@@ -105,7 +105,7 @@ export default function HomeScreen() {
       style={{ flex: 1 }}
     >
       <SafeAreaView className="flex-1">
-        <View className="flex-1 flex-row">
+        <View className="flex-1 flex-row mx-4">
           <View className="w-[40%] h-full">
             <View className="flex-1">
               <MotiView

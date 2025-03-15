@@ -1,4 +1,12 @@
-import { View, Text, Pressable, Image, Linking, Platform } from "react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  Image,
+  Linking,
+  Platform,
+  ScrollView,
+} from "react-native";
 import { Album } from "./RecordComp";
 import { MotiView } from "moti";
 import { useWikipediaInfo } from "../hooks/useWikipediaInfo";
@@ -43,8 +51,11 @@ export default function AlbumDetails({
   console.log("AlbumDetails props:", { genre, selectedId, selectedArtist }); // Debug log
 
   return (
-    <View className="w-[60%] my-24 items-center gap-16">
-      <View className="w-full max-w-[400px] flex-col items-center ">
+    <ScrollView
+      className="w-[60%] md:px-24 my-12 md:my-24 items-center "
+      showsVerticalScrollIndicator={false}
+    >
+      <View className="w-full max-w-[600px] flex-col items-center mb-8 md:mb-16">
         <Text className="text-xl font-bold text-slate-900/60">Cratediggaz</Text>
         <Text className="text-md font-light text-slate-800 w-[80%] text-center">
           A curated selection of quintessential records of all time between 1972
@@ -52,7 +63,7 @@ export default function AlbumDetails({
         </Text>
       </View>
 
-      <View className="w-full max-w-[600px] flex-col items-center gap-2">
+      <View className="w-full max-w-[600px] flex-col items-center gap-2 px-4">
         <MotiView
           key={selectedId} // Add this to trigger animation on selection change
           from={{
@@ -71,13 +82,13 @@ export default function AlbumDetails({
           className="flex-col items-center gap-2"
         >
           <View className="w-full sm:w-[80%] flex-col items-center align-middle ">
-            <Text className="text-4xl font-bold text-slate-900 text-center ">
+            <Text className="text-lg md:text-4xl font-bold text-slate-900 text-center ">
               {albums.find((a) => a.id === selectedId)?.name}
             </Text>
-            <Text className="text-lg font-bold text-slate-900">
+            <Text className="text-md md:text-lg font-bold text-slate-900 text-center">
               {selectedArtist?.name}
             </Text>
-            <Text className="text-md text-slate-900">
+            <Text className="text-sm md:text-md text-slate-900">
               {albums.find((a) => a.id === selectedId)?.release_date ||
                 "Release date not available"}
             </Text>
@@ -102,7 +113,7 @@ export default function AlbumDetails({
           </View>
 
           {description && (
-            <Text className="text-lg font-light text-slate-800 text-center px-8 mb-4 ">
+            <Text className="text-sm md:text-lg font-light text-slate-800 text-center px-8 mb-4 ">
               {description}
             </Text>
           )}
@@ -134,6 +145,6 @@ export default function AlbumDetails({
           </Pressable>
         </MotiView>
       </View>
-    </View>
+    </ScrollView>
   );
 }
