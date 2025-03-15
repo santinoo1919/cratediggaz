@@ -82,7 +82,7 @@ export default function RecordComp({
           onPressIn={() => setIsHovered(true)}
           onPressOut={() => setIsHovered(false)}
           className={`flex-row items-center justify-center ${
-            isSelected ? "z-30 my-12 md:my-24" : ""
+            isSelected ? "z-30 mx-12 md:my-24" : ""
           }`}
         >
           <Image

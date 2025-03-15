@@ -52,10 +52,10 @@ export default function AlbumDetails({
 
   return (
     <ScrollView
-      className="w-[60%] md:px-24 my-12 md:my-24 items-center "
+      className=" w-full px-8 my-8 md:my-16 items-center "
       showsVerticalScrollIndicator={false}
     >
-      <View className="w-full max-w-[600px] flex-col items-center mb-8 md:mb-16">
+      <View className="w-full max-w-[600px]  flex-col items-center mb-8 md:mb-16">
         <Text className="text-xl font-bold text-slate-900/60">Cratediggaz</Text>
         <Text className="text-md font-light text-slate-800 w-[80%] text-center">
           A curated selection of quintessential records of all time between 1972
@@ -104,16 +104,16 @@ export default function AlbumDetails({
             </View>
           </View>
           <View className="flex-col items-center mb-4">
-            <Text className="text-md font-normal text-gray-800">
+            <Text className="text-md font-normal text-gray-800 text-center">
               {selectedArtist?.followers?.total} followers
             </Text>
-            <Text className="text-md font-normal text-gray-800">
+            <Text className="text-md font-normal text-gray-800 text-center">
               {selectedArtist?.genres?.join(", ")}
             </Text>
           </View>
 
           {description && (
-            <Text className="text-sm md:text-lg font-light text-slate-800 text-center px-8 mb-4 ">
+            <Text className="text-sm md:text-lg font-light text-slate-900 text-center px-8 mb-4 ">
               {description}
             </Text>
           )}
