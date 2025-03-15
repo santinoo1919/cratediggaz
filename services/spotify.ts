@@ -10,6 +10,20 @@ const MAX_RETRIES = 3;
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+export const ensureHttps = (url: string) => {
+  return url ? url.replace("http://", "https://") : url;
+};
+
+export const processAlbumData = (album: any) => {
+  return {
+    ...album,
+    images: album.images.map((img: any) => ({
+      ...img,
+      url: ensureHttps(img.url),
+    })),
+  };
+};
+
 // Get client credentials token
 export const getSpotifyToken = async () => {
   try {

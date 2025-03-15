@@ -1,13 +1,13 @@
 import { useState } from "react";
 import {
   View,
-  Image,
   Text,
   TouchableOpacity,
   Pressable,
   useWindowDimensions,
 } from "react-native";
 import { MotiView } from "moti";
+import { Image } from "expo-image"; // Consider using expo-image instead
 
 export interface Album {
   id: string;
@@ -39,6 +39,17 @@ export default function RecordComp({
 }) {
   const [isHovered, setIsHovered] = useState(false);
   const { width } = useWindowDimensions(); // Add this import from react-native
+  const [imageError, setImageError] = useState(false);
+
+  // Get the best quality image URL or fallback
+  const getImageUrl = () => {
+    if (imageError || !album.images?.[0]?.url) {
+      return "https://via.placeholder.com/300"; // Fallback image
+    }
+    // Ensure HTTPS and handle cross-origin issues
+    const imageUrl = album.images[0].url;
+    return imageUrl.replace("http://", "https://");
+  };
 
   // Adjust scale based on screen size
   const getScale = () => {
@@ -86,13 +97,16 @@ export default function RecordComp({
           }`}
         >
           <Image
-            source={{ uri: album.images[0]?.url }}
-            className={`w-[80px] h-[80px] md:w-[100px] md:h-[100px] rounded shadow-md ${
-              isSelected ? " ring ring-gray-50" : ""
-            }`}
-            onError={(e) =>
-              console.log("Error loading artist image:", e.nativeEvent.error)
-            } // Log errors
+            source={{ uri: getImageUrl() }}
+            className={`
+            w-[80px] h-[80px] 
+            md:w-[100px] md:h-[100px] 
+            rounded-lg shadow-lg
+            ${isSelected ? "ring-4 ring-white" : ""}
+          `}
+            contentFit="cover"
+            transition={200}
+            onError={() => setImageError(true)}
           />
         </Pressable>
       </MotiView>

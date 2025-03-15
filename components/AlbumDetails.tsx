@@ -2,7 +2,6 @@ import {
   View,
   Text,
   Pressable,
-  Image,
   Linking,
   Platform,
   ScrollView,
@@ -14,6 +13,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { searchDiscogsRelease } from "../hooks/discogs";
 import { useEffect } from "react";
 import { useState } from "react";
+import { Image } from "expo-image"; // Consider using expo-image instead
 
 interface AlbumDetailsProps {
   genre: "funk" | "soul";
@@ -32,6 +32,10 @@ export default function AlbumDetails({
   const [discogsUrl, setDiscogsUrl] = useState<string | null>(null);
   const [price, setPrice] = useState<number | null>(null);
   const [currency, setCurrency] = useState<string | null>(null);
+
+  const [artistImageError, setArtistImageError] = useState(false);
+  const artistImageUrl =
+    selectedArtist?.images?.[0]?.url || "https://via.placeholder.com/150";
 
   useEffect(() => {
     if (selectedArtist?.name && albums.find((a) => a.id === selectedId)?.name) {
@@ -94,12 +98,11 @@ export default function AlbumDetails({
             </Text>
             <View className="flex-col items-center gap-2 mt-4">
               <Image
-                source={{
-                  uri:
-                    selectedArtist?.images?.[0]?.url ||
-                    "https://via.placeholder.com/150",
-                }}
+                source={{ uri: artistImageUrl }}
                 className="w-24 h-24 rounded-full border border-gray-100 shadow-md"
+                contentFit="cover"
+                transition={200}
+                onError={() => setArtistImageError(true)}
               />
             </View>
           </View>
@@ -127,7 +130,7 @@ export default function AlbumDetails({
               : "Not available"}
           </Text>
           <Pressable
-            className="flex-row items-center gap-2 bg-slate-900 py-2 px-4 hover:bg-slate-800 transition-colors duration-200 rounded-lg border border-slate-800 shadow-md shadow-slate-900/40"
+            className="flex-row items-center gap-2 bg-slate-900 py-2 px-4 hover:bg-slate-800 transition-colors duration-200 rounded-lg  shadow-sm shadow-slate-900/40"
             onPress={() => {
               if (discogsUrl) {
                 if (Platform.OS === "web") {
